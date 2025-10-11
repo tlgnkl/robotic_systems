@@ -34,10 +34,6 @@ def main():
         "basic_tree.py",
         "binary_tree.py",
         "binary_search_tree.py",
-        "tree_traversal.py",
-        "expression_tree.py",
-        "file_system_tree.py",
-        "decision_tree.py",
     ]
     
     print("Запуск всех модулей с деревьями...")
