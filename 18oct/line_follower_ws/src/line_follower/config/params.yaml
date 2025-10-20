@@ -1,0 +1,4 @@
+control:
+  linear_speed: 0.1
+  angular_speed: 0.3
+  waypoint_tolerance: 0.1

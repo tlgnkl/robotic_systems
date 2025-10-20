@@ -1,0 +1,8 @@
+prefix=/root/line_follower_ws/install
+
+Name: line_follower
+Description: Description of line_follower
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

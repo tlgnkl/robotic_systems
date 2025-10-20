@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /root/line_follower_ws/devel/setup.sh

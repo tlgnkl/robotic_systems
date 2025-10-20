@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="line_follower"
+          pkg="line_follower"
+          type="line_follower.py"
+          output="screen">
+        <param name="map_path" value="$(find line_follower)/maps/line_map.yaml"/>
+    </node>
+</launch>
