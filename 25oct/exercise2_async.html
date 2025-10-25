@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Async/Await Practice</title>
+    <style>
+        .container { max-width: 820px; margin: 0 auto; padding: 20px; }
+        .button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; color: #fff; }
+        .success { background-color: #4CAF50; }
+        .info { background-color: #2196F3; }
+        .error { background-color: #f44336; }
+        .user-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; background: #fff; }
+        .user-card.error { border-color: #f44336; background: #ffebee; }
+        .loading { opacity: 0.6; }
+        .log { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+        .log-entry { margin: 5px 0; padding: 5px; border-left: 3px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏳ Практика с async/await</h1>
+        
+        <button class="button success" id="loadUserBtn">Загрузить пользователя</button>
+        <button class="button info" id="parallelBtn">Параллельные запросы</button>
+        <button class="button error" id="errorHandlingBtn">Обработка ошибок</button>
+        
+        <div id="userContainer"></div>
+        <div class="log" id="log2"></div>
+    </div>
+
+    <script>
+        const userContainer = document.getElementById('userContainer');
+        const log2 = document.getElementById('log2');
+
+        function addLog2(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.borderLeftColor = type === 'error' ? '#f44336' :
+                                        type === 'success' ? '#4CAF50' : '#2196F3';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log2.appendChild(entry);
+        }
+
+        function fakeApiRequest(data, delay = 1000, shouldFail = false) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (shouldFail) {
+                        reject(new Error(`Ошибка загрузки: ${data}`));
+                    } else {
+                        resolve({ data, timestamp: new Date().toLocaleTimeString() });
+                    }
+                }, delay);
+            });
+        }
+
+        document.getElementById('loadUserBtn').addEventListener('click', async function() {
+            addLog2('--- ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ (async/await) ---');
+            
+            try {
+                addLog2('1. Начинаем загрузку пользователя...');
+                const user = await fakeApiRequest('Данные пользователя', 1500);
+                addLog2(`2. Пользователь загружен: ${user.data}`, 'success');
+
+                addLog2('3. Загружаем профиль...');
+                const profile = await fakeApiRequest('Профиль пользователя', 1000);
+                addLog2(`4. Профиль загружен: ${profile.data}`, 'success');
+
+                addLog2('5. Загружаем настройки...');
+                const settings = await fakeApiRequest('Настройки', 800);
+                addLog2(`6. Настройки загружены: ${settings.data}`, 'success');
+
+                userContainer.innerHTML = `
+                    <div class="user-card">
+                        <h3>✅ Данные успешно загружены!</h3>
+                        <p>Пользователь: ${user.data}</p>
+                        <p>Профиль: ${profile.data}</p>
+                        <p>Настройки: ${settings.data}</p>
+                        <p>Время: ${user.timestamp}</p>
+                    </div>
+                `;
+            } catch (error) {
+                addLog2(`❌ Ошибка: ${error.message}`, 'error');
+                userContainer.innerHTML = `
+                    <div class="user-card error">
+                        <h3>❌ Ошибка загрузки</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+        document.getElementById('parallelBtn').addEventListener('click', async function() {
+            addLog2('--- ПАРАЛЛЕЛЬНАЯ ЗАГРУЗКА ---');
+            
+            try {
+                addLog2('Запускаем 3 параллельных запроса...');
+                const [users, products, orders] = await Promise.all([
+                    fakeApiRequest('Список пользователей', 2000),
+                    fakeApiRequest('Каталог товаров', 1500),
+                    fakeApiRequest('История заказов', 1800)
+                ]);
+
+                addLog2('✅ Все запросы завершены!', 'success');
+                addLog2(`• ${users.data} (${users.timestamp})`);
+                addLog2(`• ${products.data} (${products.timestamp})`);
+                addLog2(`• ${orders.data} (${orders.timestamp})`);
+            } catch (error) {
+                addLog2(`❌ Один из запросов завершился ошибкой: ${error.message}`, 'error');
+            }
+        });
+
+        document.getElementById('errorHandlingBtn').addEventListener('click', async function() {
+            addLog2('--- ОБРАБОТКА ОШИБОК ---');
+            
+            try {
+                addLog2('1. Запрос, который завершится успешно...');
+                const successData = await fakeApiRequest('Успешные данные', 1000);
+                addLog2(`✅ ${successData.data}`, 'success');
+
+                addLog2('2. Запрос, который ЗАВЕРШИТСЯ ОШИБКОЙ...');
+                await fakeApiRequest('Проблемные данные', 1000, true);
+                addLog2('Этого сообщения вы не увидите...');
+            } catch (error) {
+                addLog2(`❌ Перехвачена ошибка: ${error.message}`, 'error');
+                addLog2('3. Продолжаем работу после ошибки...');
+                const recoveryData = await fakeApiRequest('Восстановленные данные', 800);
+                addLog2(`✅ Восстановление: ${recoveryData.data}`, 'success');
+            } finally {
+                addLog2('🏁 Блок finally: Завершение операции');
+            }
+        });
+    </script>
+</body>
+</html>
