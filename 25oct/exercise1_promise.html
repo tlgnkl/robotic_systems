@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Promise Practice</title>
+    <style>
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .success { background-color: #4CAF50; color: white; }
+        .error { background-color: #f44336; color: white; }
+        .info { background-color: #2196F3; color: white; }
+        .log { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+        .log-entry { margin: 5px 0; padding: 5px; border-left: 3px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Практика с Promise</h1>
+        
+        <button class="button success" id="successBtn">Успешный Promise</button>
+        <button class="button error" id="errorBtn">Promise с ошибкой</button>
+        <button class="button info" id="sequenceBtn">Цепочка Promise</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.borderLeftColor = type === 'error' ? '#f44336' : 
+                                        type === 'success' ? '#4CAF50' : '#2196F3';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function createSuccessPromise() {
+            addLog('🔹 Создаем успешный Promise...');
+            
+            return new Promise((resolve) => {
+                addLog('Promise начал выполнение...');
+                
+                setTimeout(() => {
+                    const result = 'Данные успешно загружены! ✅';
+                    addLog('Promise завершил работу');
+                    resolve(result);
+                }, 2000);
+            });
+        }
+
+        function createErrorPromise() {
+            addLog('🔹 Создаем Promise с ошибкой...');
+            
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const error = new Error('Ошибка загрузки! ❌');
+                    addLog('Promise завершился с ошибкой');
+                    reject(error);
+                }, 2000);
+            });
+        }
+
+        document.getElementById('successBtn').addEventListener('click', function() {
+            addLog('--- ЗАПУСК УСПЕШНОГО PROMISE ---');
+            
+            createSuccessPromise()
+                .then(result => {
+                    addLog(`✅ then: ${result}`, 'success');
+                })
+                .catch(error => {
+                    addLog(`❌ catch: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    addLog('🏁 finally: Операция завершена (успех или ошибка)');
+                });
+        });
+
+        document.getElementById('errorBtn').addEventListener('click', function() {
+            addLog('--- ЗАПУСК PROMISE С ОШИБКОЙ ---');
+            
+            createErrorPromise()
+                .then(result => {
+                    addLog(`✅ then: ${result}`, 'success');
+                })
+                .catch(error => {
+                    addLog(`❌ catch: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    addLog('🏁 finally: Операция завершена (успех или ошибка)');
+                });
+        });
+
+        document.getElementById('sequenceBtn').addEventListener('click', function() {
+            addLog('--- ЗАПУСК ЦЕПОЧКИ PROMISE ---');
+            
+            new Promise((resolve) => {
+                setTimeout(() => {
+                    addLog('🔹 Шаг 1: Получаем userId...');
+                    resolve(123);
+                }, 1000);
+            })
+            .then(userId => {
+                addLog(`🔹 Шаг 2: Получили userId = ${userId}, запрашиваем данные пользователя...`);
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve({ userId, name: 'Иван Иванов', email: 'ivan@example.com' });
+                    }, 1000);
+                });
+            })
+            .then(userData => {
+                addLog(`🔹 Шаг 3: Получили данные пользователя: ${userData.name}`);
+                addLog('🔹 Шаг 4: Запрашиваем заказы пользователя...');
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve({
+                            ...userData,
+                            orders: ['Заказ #1', 'Заказ #2', 'Заказ #3']
+                        });
+                    }, 1000);
+                });
+            })
+            .then(finalData => {
+                addLog('✅ Финальный результат:', 'success');
+                addLog(`   Пользователь: ${finalData.name}`);
+                addLog(`   Email: ${finalData.email}`);
+                addLog(`   Заказы: ${finalData.orders.join(', ')}`);
+            })
+            .catch(error => {
+                addLog(`❌ Ошибка в цепочке: ${error.message}`, 'error');
+            });
+        });
+    </script>
+</body>
+</html>
